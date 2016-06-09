@@ -76,6 +76,7 @@ var ParamsFromUrl = function(params) {
     q: '',
     i: 'nope',
     files: '',
+    ctx: '',
     repos: '*'
   };
   return ParamsFromQueryString(location.search, params);
@@ -295,7 +296,7 @@ var Model = {
   },
 
   UrlToRepo: function(repo, path, line, rev) {
-    return UrlToRepo(this.repos[repo], path, line, rev);
+    return UrlToRepo(this.repos[repo], repo, path, line, rev);
   }
 
 };
@@ -393,26 +394,30 @@ var SearchBar = React.createClass({
       q : this.refs.q.getDOMNode().value.trim(),
       files : this.refs.files.getDOMNode().value.trim(),
       repos : repos.join(','),
-      i: this.refs.icase.getDOMNode().checked ? 'fosho' : 'nope'
+      i: this.refs.icase.getDOMNode().checked ? 'fosho' : 'nope',
+      ctx: this.refs.ctx.getDOMNode().value.trim()
     };
   },
   setParams: function(params) {
     var q = this.refs.q.getDOMNode(),
         i = this.refs.icase.getDOMNode(),
-        files = this.refs.files.getDOMNode();
+        files = this.refs.files.getDOMNode(),
+        ctx = this.refs.ctx.getDOMNode();
 
     q.value = params.q;
     i.checked = ParamValueToBool(params.i);
     files.value = params.files;
+    ctx.value = params.ctx;
   },
   hasAdvancedValues: function() {
-    return this.refs.files.getDOMNode().value.trim() !== '' || this.refs.icase.getDOMNode().checked || this.refs.repos.getDOMNode().value !== '';
+    return this.refs.files.getDOMNode().value.trim() !== '' || this.refs.icase.getDOMNode().checked || this.refs.repos.getDOMNode().value !== '' || this.refs.ctx.getDOMNode().value !== '';
   },
   showAdvanced: function() {
     var adv = this.refs.adv.getDOMNode(),
         ban = this.refs.ban.getDOMNode(),
         q = this.refs.q.getDOMNode(),
-        files = this.refs.files.getDOMNode();
+        files = this.refs.files.getDOMNode(),
+        ctx = this.refs.ctx.getDOMNode();
 
     css(adv, 'height', 'auto');
     css(adv, 'padding', '10px 0');
@@ -427,7 +432,8 @@ var SearchBar = React.createClass({
   hideAdvanced: function() {
     var adv = this.refs.adv.getDOMNode(),
         ban = this.refs.ban.getDOMNode(),
-        q = this.refs.q.getDOMNode();
+        q = this.refs.q.getDOMNode(),
+        ctx = this.refs.ctx.getDOMNode();
 
     css(adv, 'height', '0');
     css(adv, 'padding', '0');
@@ -497,6 +503,15 @@ var SearchBar = React.createClass({
                     ref="files"
                     onKeyDown={this.filesGotKeydown}
                     onFocus={this.filesGotFocus} />
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="ctx">Lines of context</label>
+              <div className="field-input">
+                <input type="text"
+                    id="ctx"
+                    placeholder="2"
+                    ref="ctx" />
               </div>
             </div>
             <div className="field">
@@ -763,6 +778,7 @@ var App = React.createClass({
       q: params.q,
       i: params.i,
       files: params.files,
+      ctx: params.ctx,
       repos: repos
     });
 
@@ -817,6 +833,7 @@ var App = React.createClass({
       '?q=' + encodeURIComponent(params.q) +
       '&i=' + encodeURIComponent(params.i) +
       '&files=' + encodeURIComponent(params.files) +
+      '&ctx=' + encodeURIComponent(params.ctx) +
       '&repos=' + params.repos;
     history.pushState({path:path}, '', path);
   },
@@ -827,6 +844,7 @@ var App = React.createClass({
             q={this.state.q}
             i={this.state.i}
             files={this.state.files}
+            ctx={this.state.ctx}
             repos={this.state.repos}
             onSearchRequested={this.onSearchRequested} />
         <ResultView ref="resultView" q={this.state.q} />

@@ -1,11 +1,15 @@
 export function ExpandVars(template, values) {
     for (var name in values) {
-        template = template.replace('{' + name + '}', values[name]);
+        if (name.indexOf('repo') > -1 || name.indexOf('path') > -1) {
+            template = template.replace('{' + name + '}', values[name].replace(new RegExp('\/', 'g'), '%2F'));
+        } else {
+            template = template.replace('{' + name + '}', values[name]);
+        }
     }
     return template;
 };
 
-export function UrlToRepo(repo, path, line, rev) {
+export function UrlToRepo(repo, reponame, path, line, rev) {
     var url = repo.url.replace(/\.git$/, ''),
         pattern = repo['url-pattern'],
         filename = path.substring(path.lastIndexOf('/') + 1),
@@ -35,6 +39,7 @@ export function UrlToRepo(repo, path, line, rev) {
     return ExpandVars(pattern['base-url'], {
         url : url,
         path: path,
+	repo: reponame,
         rev: rev,
         anchor: anchor
     });
